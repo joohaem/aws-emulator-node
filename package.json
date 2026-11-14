@@ -1,0 +1,79 @@
+{
+  "name": "@seokju-na/aws-emulator-node",
+  "version": "0.1.0",
+  "description": "AWS Emulator (aws/aws-emulator) embedded in-process in Node.js via napi-rs",
+  "license": "MIT",
+  "author": "Seokju Na",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seokju-na/aws-emulator-node.git"
+  },
+  "type": "module",
+  "packageManager": "yarn@4.18.1",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "scripts/postinstall.mjs",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "napi": {
+    "binaryName": "aws-emulator-node",
+    "targets": [
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-musl",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "prepack": "tsdown --no-attw",
+    "build:native": "yarn vendor && napi build --platform --release --no-js --output-dir lib --dts native.d.ts",
+    "build:native:debug": "yarn vendor && napi build --platform --no-js --output-dir lib --dts native.d.ts",
+    "build:js": "tsdown",
+    "build": "yarn build:native && yarn build:js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "vendor": "bash scripts/vendor-aws-emulator.sh",
+    "postinstall": "node scripts/postinstall.mjs"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "0.18.5",
+    "@aws-sdk/client-cloudfront": "^3.1168.0",
+    "@aws-sdk/client-dynamodb": "^3.1168.0",
+    "@aws-sdk/client-s3": "^3.1168.0",
+    "@aws-sdk/client-sqs": "^3.1168.0",
+    "@biomejs/biome": "2.6.7",
+    "@napi-rs/cli": "3.10.12",
+    "@napi-rs/cross-toolchain": "1.0.5",
+    "@types/node": "^26.6.6",
+    "tsdown": "0.23.7",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "module": "./dist/index.mjs"
+}

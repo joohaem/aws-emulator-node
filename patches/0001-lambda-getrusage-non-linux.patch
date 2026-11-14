@@ -1,0 +1,33 @@
+Subject: [PATCH] lambda: build `faulted_bytes` on macOS (RUSAGE_THREAD is Linux-only)
+
+`nix::sys::resource::UsageWho::RUSAGE_THREAD` exists only on Linux/Android
+(and FreeBSD/OpenBSD), so the Lambda service crate fails to compile on macOS:
+
+    error[E0599]: no variant or associated item named `RUSAGE_THREAD` found
+                  for enum `UsageWho`
+
+On targets without a per-thread usage, fall back to `RUSAGE_SELF`. The
+memory bound already samples the whole process for its resident-size check
+(`resident_bytes`), so a process-wide fault count keeps the same "delta from
+the start of the run" semantics, only less precise.
+
+--- a/services/service-com-amazonaws-lambda-awsgirapiservice/src/state/execution/python.rs
++++ b/services/service-com-amazonaws-lambda-awsgirapiservice/src/state/execution/python.rs
+@@ -2074,8 +2074,16 @@ impl Bounds {
+ }
+ 
+ /// How many bytes of memory THIS thread has faulted in, as the host reports it.
++///
++/// `RUSAGE_THREAD` is Linux-only; elsewhere (macOS) the whole process's faults are
++/// read instead, which over-counts when other threads fault pages during the run.
+ fn faulted_bytes() -> u64 {
+-    match ::nix::sys::resource::getrusage(::nix::sys::resource::UsageWho::RUSAGE_THREAD) {
++    #[cfg(any(target_os = "linux", target_os = "android"))]
++    const WHO: ::nix::sys::resource::UsageWho = ::nix::sys::resource::UsageWho::RUSAGE_THREAD;
++    #[cfg(not(any(target_os = "linux", target_os = "android")))]
++    const WHO: ::nix::sys::resource::UsageWho = ::nix::sys::resource::UsageWho::RUSAGE_SELF;
++
++    match ::nix::sys::resource::getrusage(WHO) {
+         Ok(usage) => {
+             let pages = usage.minor_page_faults().saturating_add(usage.major_page_faults());
+             u64::try_from(pages).unwrap_or(0).saturating_mul(PAGE_BYTES)

@@ -1,0 +1,39 @@
+[package]
+name = "aws-emulator-node"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+aws-emulator-embedded = { path = "vendor/aws-emulator/core/embedded" }
+emulator-server = { path = "vendor/aws-emulator/vendor/server", package = "aws-emulator-server" }
+aws-smithy-runtime-api = { version = "1", features = ["client", "http-1x"] }
+aws-smithy-types = { version = "1", features = ["http-body-1-x"] }
+http = "1"
+napi = { version = "3", default-features = false, features = ["napi8", "async", "tokio_rt"] }
+napi-derive = "3"
+tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
+
+[build-dependencies]
+napi-build = "2"
+
+# The vendored tree is its own Cargo workspace; keep it out of ours.
+[workspace]
+exclude = ["vendor"]
+
+# Mirrors the upstream workspace: debuginfo dominates build time and disk for ~440 service
+# crates, and nothing reads it.
+[profile.dev]
+debug = "line-tables-only"
+split-debuginfo = "unpacked"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+debug = false
+strip = "symbols"

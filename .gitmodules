@@ -1,0 +1,5 @@
+[submodule "vendor/aws-emulator"]
+	path = vendor/aws-emulator
+	url = https://github.com/aws/aws-emulator.git
+	shallow = true
+	ignore = dirty

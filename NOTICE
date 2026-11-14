@@ -1,0 +1,24 @@
+@seokju-na/aws-emulator-node
+Copyright (c) 2026 Seokju Na. Licensed under the MIT License (see LICENSE).
+
+This is an unofficial project. It is not affiliated with, endorsed by, or
+supported by Amazon Web Services. "AWS" is a trademark of Amazon.com, Inc. or
+its affiliates.
+
+The native binding (aws-emulator-node.<triple>.node) is built from AWS Emulator
+(https://github.com/aws/aws-emulator, v1.0.353), included as a git submodule at
+vendor/aws-emulator/ with the changes in patches/. It includes:
+
+- AWS Emulator, licensed under CC0-1.0, except its vendor/ directory, which is
+  licensed under the Apache License 2.0 and carries this notice:
+
+    Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+    This product includes software developed at
+    Amazon Web Services, Inc. (http://aws.amazon.com/).
+
+- Third-party Rust crates under their own licenses (MIT, Apache-2.0, BSD,
+  ISC, Unicode, Zlib, PSF-2.0, LGPL-3.0-only and others). The `malachite-*`
+  crates (LGPL-3.0-only) are statically linked through the Lambda service's
+  Python runtime (rustpython); the complete source needed to rebuild and
+  relink the binary is this repository.
